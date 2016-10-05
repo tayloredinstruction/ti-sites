@@ -13,6 +13,7 @@ html, body, #googft-mapCanvas {
 
 </style>
 <style>
+  
     body { 
       background-color: black;
       color: white;
@@ -83,7 +84,7 @@ html, body, #googft-mapCanvas {
 </head>
 
 <body>
-  <div> Min.&nbsp;Level:&nbsp;<select id="min. level" onchange="initialize()">
+  <div> <p style="text-align:center">Min.&nbsp;Level:&nbsp;<select id="min. level" onchange="initialize()">
   <option value=0 selected>Visual</option>
   <option value=1>Low Level</option>
   <option value=2>Good Level</option>
@@ -110,7 +111,7 @@ Max.&nbsp;Grade:&nbsp;<select id="max. grade" onchange="initialize()" default>
   <option value=4>4</option>
   <option value=5>5</option>
   <option value=6 selected>6</option>
-</select>
+    </select></p>
 </div>
   
   <div id="googft-mapCanvas"></div>
