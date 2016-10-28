@@ -86,12 +86,7 @@ html, body, #googft-mapCanvas {
         legendOpenButton.style.display = 'block';
       }
     }
-  }
-
-  google.maps.event.addDomListener(window, 'load', initialize);
-</script>
-<script>
- var googleMapWidth = $("#map-container").css('width');
+var googleMapWidth = $("#map-container").css('width');
 var googleMapHeight = $("#map-container").css('height');
 
 $('#btn-enter-full-screen').click(function() {
@@ -109,7 +104,7 @@ $('#btn-enter-full-screen').click(function() {
         height: '100%'
     });
 
-    google.maps.event.trigger(map, 'resize');
+    google.maps.event.trigger(mapdiv, 'resize');
 
     // Gui
     $('#btn-enter-full-screen').toggle();
@@ -128,14 +123,18 @@ $('#btn-exit-full-screen').click(function() {
         backgroundColor: 'transparent'
     });
 
-    google.maps.event.trigger(map, 'resize');
+    google.maps.event.trigger(mapdiv, 'resize');
 
     // Gui
     $('#btn-enter-full-screen').toggle();
     $('#btn-exit-full-screen').toggle();
     return false;
 });
+  }
+
+  google.maps.event.addDomListener(window, 'load', initialize);
 </script>
+
 </head>
 
 <body>
