@@ -92,8 +92,7 @@ html, body, #googft-mapCanvas {
       css('left', 0).
       css("width", '100%').
       css("height", '100%');
-    google.maps.event.trigger(map, 'resize');
-    map.setCenter(newyork);
+    google.maps.event.trigger(mapdiv, 'resize');
     return false;
   });
 
@@ -102,8 +101,7 @@ html, body, #googft-mapCanvas {
       css('top', 0).
       css("width", googleMapWidth).
       css("height", googleMapHeight);
-    google.maps.event.trigger(map, 'resize');
-    map.setCenter(newyork);
+    google.maps.event.trigger(mapdiv, 'resize');
     return false;
  
  }
