@@ -86,13 +86,16 @@ html, body, #googft-mapCanvas {
         legendOpenButton.style.display = 'block';
       }
     }
+  var googleMapWidth = $("#map_canvas").css('width');
+  var googleMapHeight = $("#map_canvas").css('height');
+
  $('#enter-full-screen').click(function(){
     $("#map_canvas").css("position", 'fixed').
       css('top', 0).
       css('left', 0).
       css("width", '100%').
       css("height", '100%');
-    google.maps.event.trigger(mapdiv, 'resize');
+    google.maps.event.trigger(map, 'resize');
     return false;
   });
 
@@ -101,7 +104,7 @@ html, body, #googft-mapCanvas {
       css('top', 0).
       css("width", googleMapWidth).
       css("height", googleMapHeight);
-    google.maps.event.trigger(mapdiv, 'resize');
+    google.maps.event.trigger(map, 'resize');
     return false;
  
  }
