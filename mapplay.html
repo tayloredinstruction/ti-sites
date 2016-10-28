@@ -1,4 +1,8 @@
 <script>
+    $(function() {
+  var map = new google.maps.Map(document.getElementById("map_canvas"), {});
+  var newyork = new google.maps.LatLng(40.69847032728747, -73.9514422416687);
+
 // Save with and height for full screen mode
 var googleMapWidth = $("#map-container").css('width');
 var googleMapHeight = $("#map-container").css('height');
@@ -46,6 +50,7 @@ $('#btn-exit-full-screen').click(function() {
     $('#btn-exit-full-screen').toggle();
     return false;
 });
+    });
 </script>
 <div id="map-container">
         <div class="btn-full-screen" style="text-align: right">
