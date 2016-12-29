@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script>
   (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -12,8 +11,9 @@
   ga('send', 'pageview');
 
 </script>
-<meta name="viewport">
-<title>River Levels-Northern NSW - Google Fusion Tables</title>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <title>River Levels-Northern NSW - Google Fusion Tables</title>
 <style type="text/css">
 html, body, #googft-mapCanvas {
   height: 500px;
@@ -21,6 +21,29 @@ html, body, #googft-mapCanvas {
   padding: 0;
   width: 100%;
 }
+      #legend {
+        background-color: #FFF;
+        margin: 10px;
+        padding: 5px;
+        width: 150px;
+      }
+
+      #legend p {
+        font-weight: bold;
+        margin-top: 3px;
+      }
+
+      #legend div {
+        clear: both;
+      }
+
+      .color {
+        height: 12px;
+        width: 12px;
+        margin-right: 3px;
+        float: left;
+        display: block;
+      }
 
 </style>
 <style>
@@ -31,24 +54,64 @@ html, body, #googft-mapCanvas {
 </style>
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAvBPL76AXVKbwSpm9X1BlXTzaTXhNLYew"></script>
 <script type="text/javascript">
+      var COLUMN_STYLES = {
+        'Total Urban and Rural Housing Units': [
+          {
+            'min': 200000,
+            'max': 3150000,
+            'color': '#FE7276'
+          },
+          {
+            'min': 3150000,
+            'max': 6100000,
+            'color': '#FE3F44'
+          },
+          {
+            'min': 6100000,
+            'max': 9050000,
+            'color': '#BE2F33'
+          },
+          {
+            'min': 9050000,
+            'max': 13000000,
+            'color': '#A40004'
+          }
+        ],
+        'Total Urban Housing Units': [
+          {
+            'min': 98000,
+            'max': 3865333,
+            'color': '#717BD8',
+            'opacity': 0.7
+          },
+          {
+            'min': 3865333,
+            'max': 7632666,
+            'color': '#2E3784',
+            'opacity': 0.7
+          },
+          {
+            'min': 7632666,
+            'max': 11400000,
+            'color': '#081272',
+            'opacity': 0.7
+          }
+        ]
+      };
+
   function initialize() {
     google.maps.visualRefresh = true;
-    var isMobile = (navigator.userAgent.toLowerCase().indexOf('android') > -1) ||
-      (navigator.userAgent.match(/(iPod|iPhone|iPad|BlackBerry|Windows Phone|iemobile)/));
-    if (isMobile) {
-      var viewport = document.querySelector("meta[name=viewport]");
-      viewport.setAttribute('content', 'initial-scale=1.0, user-scalable=no');
-    }
+    
+   
     var mapDiv = document.getElementById('googft-mapCanvas');
     mapDiv.style.width ='100%';
-    mapDiv.style.height = isMobile ? '100%' : '500px';
+    mapDiv.style.height = '100%';
     var map = new google.maps.Map(mapDiv, {
       center: new google.maps.LatLng(-30.3333, 152.7167),
       zoom: 4,
       mapTypeId: google.maps.MapTypeId.ROADMAP
     });
-    map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(document.getElementById('googft-legend-open'));
-    map.controls[google.maps.ControlPosition.LEFT_BOTTOM].push(document.getElementById('googft-legend'));
+
     var mini = document.getElementById("min. level");
     var miniVal = mini.options[mini.selectedIndex].value;
     var maxi = document.getElementById("max. level");
@@ -57,7 +120,11 @@ html, body, #googft-mapCanvas {
     var miniValg = minig.options[minig.selectedIndex].value;
     var maxig = document.getElementById("max. grade");
     var maxiValg = maxig.options[maxig.selectedIndex].value;
-    layer = new google.maps.FusionTablesLayer({
+    var mults = document.getElementById("type");
+    var mult = mults.options[mults.selectedIndex].value;
+    var sid = mult*2
+    var tid = mult*3
+    var layer = new google.maps.FusionTablesLayer({
       map: map,
       heatmap: { enabled: false },
       query: {
@@ -66,81 +133,27 @@ html, body, #googft-mapCanvas {
         where:  "col15 \x3e\x3d "+miniVal+" and col15 \x3c\x3d "+maxiVal+" and col14 \x3e\x3d "+miniValg+" and col16 \x3c\x3d "+maxiValg
       },
       options: {
-        styleId: 2,
-        templateId: 3
+        styleId: sid,
+        templateId: tid
       }
     });
 
-    if (isMobile) {
-      var legend = document.getElementById('googft-legend');
-      var legendOpenButton = document.getElementById('googft-legend-open');
-      var legendCloseButton = document.getElementById('googft-legend-close');
-      legend.style.display = 'none';
-      legendOpenButton.style.display = 'block';
-      legendCloseButton.style.display = 'block';
-      legendOpenButton.onclick = function() {
-        legend.style.display = 'block';
-        legendOpenButton.style.display = 'none';
-      }
-      legendCloseButton.onclick = function() {
-        legend.style.display = 'none';
-        legendOpenButton.style.display = 'block';
-      }
-    }
-var googleMapWidth = $("#map-container").css('width');
-var googleMapHeight = $("#map-container").css('height');
 
-$('#btn-enter-full-screen').click(function() {
-
-    $("#map-container").css({
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'white'
-    });
-
-    $("#map-canvas").css({
-        height: '100%'
-    });
-
-    google.maps.event.trigger(mapdiv, 'resize');
-
-    // Gui
-    $('#btn-enter-full-screen').toggle();
-    $('#btn-exit-full-screen').toggle();
-
-    return false;
-});
-
-$('#btn-exit-full-screen').click(function() {
-
-    $("#map-container").css({
-        position: 'relative',
-        top: 0,
-        width: googleMapWidth,
-        height: googleMapHeight,
-        backgroundColor: 'transparent'
-    });
-
-    google.maps.event.trigger(mapdiv, 'resize');
-
-    // Gui
-    $('#btn-enter-full-screen').toggle();
-    $('#btn-exit-full-screen').toggle();
-    return false;
-});
   }
 
+        
   google.maps.event.addDomListener(window, 'load', initialize);
 </script>
-
 </head>
 
 <body>
-  <div> <p style="text-align:center;color:white">Min.&nbsp;Level:&nbsp;<select id="min. level" onchange="initialize()">
-  <option value=0 selected>Visual</option>
+  <div> <p style="text-align:center;color:white">Map&nbsp;Type:&nbsp;<select id="type" onchange="initialize()">
+  <option value=1 selected>River Levels</option>
+  <option value=2>Forecast Rainfall</option>
+</select>
+Min.&nbsp;Level:&nbsp;<select id="min. level" onchange="initialize()">
+  <option value=-1 selected>Any</option>
+  <option value=0>Visual</option>
   <option value=1>Low Level</option>
   <option value=2>Good Level</option>
   <option value=3>High Level</option>
@@ -149,7 +162,8 @@ $('#btn-exit-full-screen').click(function() {
   <option value=0>Visual</option>
   <option value=1>Low Level</option>
   <option value=2>Good Level</option>
-  <option value=3 selected>High Level</option>
+  <option value=3>High Level</option>
+  <option value=4 selected>Any</option>
 </select>
 Min.&nbsp;Grade:&nbsp;<select id="min. grade" onchange="initialize()" default>
   <option value=-1>None</option>
@@ -168,13 +182,7 @@ Max.&nbsp;Grade:&nbsp;<select id="max. grade" onchange="initialize()" default>
   <option value=6 selected>6</option>
     </select></p>
 </div>
-<div id="map-container">
-        <div class="btn-full-screen" style="text-align: right">
-            <button id="btn-enter-full-screen">Enter full Screen</button>
-            <button id="btn-exit-full-screen">Exit full Screen</button>
-        </div>
-        <div id="googft-mapCanvas"></div>
-    </div> 
-
+  
+  <div id="googft-mapCanvas"></div>
 </body>
 </html>
