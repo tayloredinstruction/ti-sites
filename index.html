@@ -6,21 +6,19 @@
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
   m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
   })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
   ga('create', 'UA-82227021-2', 'auto');
   ga('send', 'pageview');
-
 </script>
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="UTF-8">
     <title>River Levels-Northern NSW - Google Fusion Tables</title>
 <style type="text/css">
 html, body, #googft-mapCanvas {
-  height: 90vh;
+  height: 90%;
   margin: 0;
   padding-right: 5px;
   padding-left:5px;
-  width: 90wh;
+  width: 98%;
 }
       #legend {
         background: #FFF;
@@ -29,7 +27,6 @@ html, body, #googft-mapCanvas {
         font-size: 12px;
         font-family: Arial, sans-serif;
       }
-
       .color {
         border: 1px solid;
         height: 12px;
@@ -37,19 +34,15 @@ html, body, #googft-mapCanvas {
         margin-right: 3px;
         float: left;
       }
-
       .red {
         background: #C00;
       }
-
       .yellow {
         background: #FF3;
       }
-
       .green {
         background: #6F0;
       }
-
       .blue {
         background: #06C;
       }
@@ -64,8 +57,6 @@ html, body, #googft-mapCanvas {
         float: left;
         }
       
-
-
 </style>
 <style>
   
@@ -75,7 +66,6 @@ html, body, #googft-mapCanvas {
 </style>
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAvBPL76AXVKbwSpm9X1BlXTzaTXhNLYew"></script>
 <script type="text/javascript">
-
   function initialize() {
     google.maps.visualRefresh = true;
     
@@ -88,7 +78,6 @@ html, body, #googft-mapCanvas {
       zoom: 4,
       mapTypeId: google.maps.MapTypeId.ROADMAP
     });
-
     var mini = document.getElementById("min. level");
     var miniVal = mini.options[mini.selectedIndex].value;
     var maxi = document.getElementById("max. level");
@@ -114,7 +103,6 @@ html, body, #googft-mapCanvas {
         templateId: tid
       }
     });
-
         // Create the legend and display on the map
         if(mult==1){
         var redtext = "Low Level"
@@ -139,10 +127,8 @@ html, body, #googft-mapCanvas {
         legend.innerHTML = content.join('');
         legend.index = 1;
         map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
-
   }
   
-
         
   google.maps.event.addDomListener(window, 'load', initialize);
 </script>
