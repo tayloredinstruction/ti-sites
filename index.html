@@ -119,6 +119,7 @@ html, body, #googft-mapCanvas {
         var legend = document.createElement('div');
         legend.id = 'legend';
         var content = [];
+ 		content.push('<p><input type="checkbox" name="hide" value = 1 onclick = "showHide()"> Hide </p>')
         content.push('<h3>Legend</h3>');
         content.push('<p><div class="color red"></div>'+redtext+'</p>');
         content.push('<p><div class="color yellow"></div>'+yeltext+'</p>');
@@ -129,7 +130,16 @@ html, body, #googft-mapCanvas {
         map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
   }
   
-        
+      function showHide() {
+    var el = document.getElementById('legend');
+	el.value+=1
+	if (el.value % 2 ===0){
+        el.style.display = 'block';
+	}
+	else{
+		el.style.display = 'none';
+	}
+}  
   google.maps.event.addDomListener(window, 'load', initialize);
 </script>
 </head>
