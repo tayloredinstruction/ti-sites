@@ -16,34 +16,55 @@
     <title>River Levels-Northern NSW - Google Fusion Tables</title>
 <style type="text/css">
 html, body, #googft-mapCanvas {
-  height: 500px;
+  height: 90%;
   margin: 0;
-  padding: 0;
-  width: 100%;
+  padding-right: 5px;
+  padding-left:5px;
+  width: 98%;
 }
       #legend {
-        background-color: #FFF;
-        margin: 10px;
-        padding: 5px;
-        width: 150px;
-      }
-
-      #legend p {
-        font-weight: bold;
-        margin-top: 3px;
-      }
-
-      #legend div {
-        clear: both;
+        background: #FFF;
+        padding: 10px;
+        margin: 5px;
+        font-size: 12px;
+        font-family: Arial, sans-serif;
       }
 
       .color {
+        border: 1px solid;
         height: 12px;
         width: 12px;
         margin-right: 3px;
         float: left;
-        display: block;
       }
+
+      .red {
+        background: #C00;
+      }
+
+      .yellow {
+        background: #FF3;
+      }
+
+      .green {
+        background: #6F0;
+      }
+
+      .blue {
+        background: #06C;
+      }
+      .white{
+      background:#FFF;
+      }
+      .box{
+      	border: 1px;
+        height: 12px;
+        width: 12px;
+        margin-right: 3px;
+        float: left;
+        }
+      
+
 
 </style>
 <style>
@@ -54,50 +75,6 @@ html, body, #googft-mapCanvas {
 </style>
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAvBPL76AXVKbwSpm9X1BlXTzaTXhNLYew"></script>
 <script type="text/javascript">
-      var COLUMN_STYLES = {
-        'Total Urban and Rural Housing Units': [
-          {
-            'min': 200000,
-            'max': 3150000,
-            'color': '#FE7276'
-          },
-          {
-            'min': 3150000,
-            'max': 6100000,
-            'color': '#FE3F44'
-          },
-          {
-            'min': 6100000,
-            'max': 9050000,
-            'color': '#BE2F33'
-          },
-          {
-            'min': 9050000,
-            'max': 13000000,
-            'color': '#A40004'
-          }
-        ],
-        'Total Urban Housing Units': [
-          {
-            'min': 98000,
-            'max': 3865333,
-            'color': '#717BD8',
-            'opacity': 0.7
-          },
-          {
-            'min': 3865333,
-            'max': 7632666,
-            'color': '#2E3784',
-            'opacity': 0.7
-          },
-          {
-            'min': 7632666,
-            'max': 11400000,
-            'color': '#081272',
-            'opacity': 0.7
-          }
-        ]
-      };
 
   function initialize() {
     google.maps.visualRefresh = true;
@@ -138,8 +115,33 @@ html, body, #googft-mapCanvas {
       }
     });
 
+        // Create the legend and display on the map
+        if(mult==1){
+        var redtext = "Low Level"
+        var yeltext = "Visual"
+        var gretext = "Good Level"
+        var blutext = "High Level"
+        }
+        else{
+        var redtext = "24h < 10mm OR <br><div class='box white'></div> 5-day < 30mm"
+        var yeltext = "24h < 20mm OR <br><div class='box white'></div> 5-day < 50mm"
+        var gretext = "24h < 40mm OR <br><div class='box white'></div> 5-day < 80mm"
+        var blutext = "24h > 40mm OR <br><div class='box white'></div> 5-day > 80mm"
+        }
+        var legend = document.createElement('div');
+        legend.id = 'legend';
+        var content = [];
+        content.push('<h3>Legend</h3>');
+        content.push('<p><div class="color red"></div>'+redtext+'</p>');
+        content.push('<p><div class="color yellow"></div>'+yeltext+'</p>');
+        content.push('<p><div class="color green"></div>'+gretext+'</p>');
+        content.push('<p><div class="color blue"></div>'+blutext+'</p>');
+        legend.innerHTML = content.join('');
+        legend.index = 1;
+        map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
 
   }
+  
 
         
   google.maps.event.addDomListener(window, 'load', initialize);
