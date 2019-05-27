@@ -206,76 +206,15 @@ Promise.all([scriptPromise2, scriptPromise3, scriptPromise5]).then(function(valu
             localStorage.json = JSON.stringify(json);
         }).then(things => {
             createMarkers(document.getElementById("type").value);
-            favpopulate();
             mapRiverPopulate();
-		displayfavs();
         })
     });
-    document.getElementById("themap").className = "";
-    document.getElementById("nomap").className = "w3-hide";
-    document.getElementById("theguide").className = "w3-hide";
-    document.getElementById("noguide").className = "";
-    firebase.auth().onAuthStateChanged(function() {
-        var user = firebase.auth().currentUser;
-        if (user && user !== null) {
-            document.getElementById("userino").innerHTML = "Signed in as " + user.displayName + ". ";
-            d = new Date();
-            firebase.database().ref('users/' + user.uid + '/info').update({
-                lastaccess: d.toLocaleString(),
-                name: user.displayName,
-                uid: user.uid
-            });
-            firebase.database().ref('users/' + user.uid + '/completed').orderByChild("details/date").on("value", function(snapshot) {
-                var data={};
-                var indx = 0;
-                snapshot.forEach( function(trip){
-                    data[indx]=trip;
-                    indx+=1;
-                })
-                localStorage.logList = JSON.stringify(data);
-                logList();
-            });
-            document.getElementById("loginbook").className = "w3-hide";
-            document.getElementById("loggedInBook").className = "";
-            firebase.database().ref('users/' + user.uid + '/info').once('value').then(function(snapshot) {
-                if (snapshot.val().favourites === undefined || snapshot.val().favourites === null) {} else {
-                    if (snapshot.val().favourites !== localStorage.favslist) {
-                        document.getElementById("favsdiv").innerHTML = "";
-                    }
-                    tfavslist = snapshot.val().favourites.split(";");
-                    localStorage.favslist = snapshot.val().favourites
-                    displayfavs();
-                    document.getElementById("userLoad").className = ""
-                    document.getElementById("loadContainerUser").className = ""
-                }
-            });
-        }
-    });
+    
 
 
 
 
-    var connectedRef = firebase.database().ref(".info/connected");
-    connectedRef.on("value", function(snap) {
-        if (snap.val() === true) {
-            console.log('online');
-            document.getElementById("themap").className = "";
-            document.getElementById("nomap").className = "w3-hide";
-            document.getElementById("theguide").className = "w3-hide";
-            document.getElementById("noguide").className = "";
-        } else {
-            document.getElementById("themap").className = "w3-hide";
-            document.getElementById("nomap").className = "";
-            document.getElementById("theguide").className = "";
-            document.getElementById("noguide").className = "w3-hide";
-            console.log('offline');
-            try{logList()}
-            catch(error){console.log(error)}
-	    if (document.getElementById('favsdiv').children.length<2){
-	      displayfavs();
-	    }
-        }
-    });
+
 });
 
 function resetRivSec() {
