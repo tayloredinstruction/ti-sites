@@ -65,19 +65,932 @@ html, body, #googft-mapCanvas {
   }
 </style>
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAvBPL76AXVKbwSpm9X1BlXTzaTXhNLYew"></script>
-<script type="text/javascript">
-  function initialize() {
-    google.maps.visualRefresh = true;
-    
-   
-    var mapDiv = document.getElementById('googft-mapCanvas');
-    mapDiv.style.width ='100%';
-    mapDiv.style.height = '100%';
-    var map = new google.maps.Map(mapDiv, {
-      center: new google.maps.LatLng(-30.3333, 152.7167),
-      zoom: 4,
-      mapTypeId: google.maps.MapTypeId.ROADMAP
+<script>
+	const scriptPromise1 = new Promise((resolve, reject) => {
+  const script = document.createElement('script');
+  document.body.appendChild(script);
+  script.onload = resolve;
+  script.onerror = reject;
+  script.async = true;
+  script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyAvBPL76AXVKbwSpm9X1BlXTzaTXhNLYew';
+});
+
+const scriptPromise2 = new Promise((resolve, reject) => {
+  const script = document.createElement('script');
+  document.body.appendChild(script);
+  script.onload = resolve;
+  script.onerror = reject;
+  script.async = true;
+  script.src = 'https://www.gstatic.com/firebasejs/5.7.0/firebase-app.js';
+});
+
+
+const scriptPromise3 = new Promise((resolve, reject) => {
+  const script = document.createElement('script');
+  document.body.appendChild(script);
+  script.onload = resolve;
+  script.onerror = reject;
+  script.async = true;
+  script.src = 'https://www.gstatic.com/firebasejs/5.7.0/firebase-auth.js';
+});
+
+
+const scriptPromise4 = new Promise((resolve, reject) => {
+  const script = document.createElement('script');
+  document.body.appendChild(script);
+  script.onload = resolve;
+  script.onerror = reject;
+  script.async = true;
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js';
+});
+
+
+const scriptPromise5 = new Promise((resolve, reject) => {
+  const script = document.createElement('script');
+  document.body.appendChild(script);
+  script.onload = resolve;
+  script.onerror = reject;
+  script.async = true;
+  script.src = 'https://www.gstatic.com/firebasejs/5.7.0/firebase-database.js';
+});
+
+const scriptPromise6 = new Promise((resolve, reject) => {
+  const script = document.createElement('script');
+  document.body.appendChild(script);
+  script.onload = resolve;
+  script.onerror = reject;
+  script.async = true;
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js';
+});
+
+
+
+Promise.all([scriptPromise2, scriptPromise3, scriptPromise5]).then(function(values) {
+    // Initialize Firebase
+    var config = {
+        apiKey: "AIzaSyAPGboQdrh1wMjLi6cxhPF53NNuCdbRgBY",
+        authDomain: "taylored-instruction.firebaseapp.com",
+        databaseURL: "https://taylored-instruction.firebaseio.com",
+        storageBucket: "taylored-instruction.appspot.com",
+        messagingSenderId: "1091342339175"
+    };
+    firebase.initializeApp(config);
+    window.markers = [];
+    try{
+      initFMap();
+    }
+    catch(error){
+      console.log('no init map');
+    }
+    firebase.database().ref('updates/client').off();
+    firebase.database().ref('updates/client').on("value", data => {
+        firebase.database().ref('rivers').once("value", data => {
+            var json = data.val();
+            localStorage.json = JSON.stringify(json);
+        }).then(things => {
+            createMarkers(document.getElementById("type").value);
+            favpopulate();
+            mapRiverPopulate();
+		displayfavs();
+        })
     });
+    document.getElementById("themap").className = "";
+    document.getElementById("nomap").className = "w3-hide";
+    document.getElementById("theguide").className = "w3-hide";
+    document.getElementById("noguide").className = "";
+    firebase.auth().onAuthStateChanged(function() {
+        var user = firebase.auth().currentUser;
+        if (user && user !== null) {
+            document.getElementById("userino").innerHTML = "Signed in as " + user.displayName + ". ";
+            d = new Date();
+            firebase.database().ref('users/' + user.uid + '/info').update({
+                lastaccess: d.toLocaleString(),
+                name: user.displayName,
+                uid: user.uid
+            });
+            firebase.database().ref('users/' + user.uid + '/completed').orderByChild("details/date").on("value", function(snapshot) {
+                var data={};
+                var indx = 0;
+                snapshot.forEach( function(trip){
+                    data[indx]=trip;
+                    indx+=1;
+                })
+                localStorage.logList = JSON.stringify(data);
+                logList();
+            });
+            document.getElementById("loginbook").className = "w3-hide";
+            document.getElementById("loggedInBook").className = "";
+            firebase.database().ref('users/' + user.uid + '/info').once('value').then(function(snapshot) {
+                if (snapshot.val().favourites === undefined || snapshot.val().favourites === null) {} else {
+                    if (snapshot.val().favourites !== localStorage.favslist) {
+                        document.getElementById("favsdiv").innerHTML = "";
+                    }
+                    tfavslist = snapshot.val().favourites.split(";");
+                    localStorage.favslist = snapshot.val().favourites
+                    displayfavs();
+                    document.getElementById("userLoad").className = ""
+                    document.getElementById("loadContainerUser").className = ""
+                }
+            });
+        }
+    });
+
+
+
+
+    var connectedRef = firebase.database().ref(".info/connected");
+    connectedRef.on("value", function(snap) {
+        if (snap.val() === true) {
+            console.log('online');
+            document.getElementById("themap").className = "";
+            document.getElementById("nomap").className = "w3-hide";
+            document.getElementById("theguide").className = "w3-hide";
+            document.getElementById("noguide").className = "";
+        } else {
+            document.getElementById("themap").className = "w3-hide";
+            document.getElementById("nomap").className = "";
+            document.getElementById("theguide").className = "";
+            document.getElementById("noguide").className = "w3-hide";
+            console.log('offline');
+            try{logList()}
+            catch(error){console.log(error)}
+	    if (document.getElementById('favsdiv').children.length<2){
+	      displayfavs();
+	    }
+        }
+    });
+});
+
+function resetRivSec() {
+    document.getElementById("mapSection").selectedIndex = 0
+}
+
+function mapSwap() {
+    if (document.getElementById("type").value == 3) {
+        window.overlays = [];
+        firebase.database().ref('updates/map').off();
+        firebase.database().ref('updates/radar').on('value', data => {
+            initMap();
+        });
+    } else {
+        firebase.database().ref('updates/radar').off();
+        firebase.database().ref('updates/map').on('value', data => {
+            initFMap().then(mapper => {
+            createMarkers(document.getElementById("type").value);
+		});
+        });
+    }
+}
+
+
+async function initMap() {
+	let hangOn = await scriptPromise1
+    firebase.database().ref('layers').once('value').then(layers => {
+        var layers = layers.val();
+        firebase.database().ref('radars').once('value').then(radars => {
+            USGSOverlay.prototype = new google.maps.OverlayView();
+            /**
+             * onAdd is called when the map's panes are ready and the overlay has been
+             * added to the map.
+             */
+            USGSOverlay.prototype.onAdd = function() {
+
+                var div = document.createElement('div');
+                div.style.borderStyle = 'none';
+                div.style.borderWidth = '0px';
+                div.style.position = 'absolute';
+
+                // Create the img element and attach it to the div.
+                var img = document.createElement('img');
+                img.src = this.image_;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.position = 'absolute';
+                div.appendChild(img);
+
+                this.div_ = div;
+
+                // Add the element to the "overlayLayer" pane.
+                var panes = this.getPanes();
+                panes.overlayLayer.appendChild(div);
+            };
+
+            USGSOverlay.prototype.draw = function() {
+
+                // We use the south-west and north-east
+                // coordinates of the overlay to peg it to the correct position and size.
+                // To do this, we need to retrieve the projection from the overlay.
+                var overlayProjection = this.getProjection();
+
+                // Retrieve the south-west and north-east coordinates of this overlay
+                // in LatLngs and convert them to pixel coordinates.
+                // We'll use these coordinates to resize the div.
+                var sw = overlayProjection.fromLatLngToDivPixel(this.bounds_.getSouthWest());
+                var ne = overlayProjection.fromLatLngToDivPixel(this.bounds_.getNorthEast());
+
+                // Resize the image's div to fit the indicated dimensions.
+                var div = this.div_;
+                div.style.left = sw.x + 'px';
+                div.style.top = ne.y + 'px';
+                div.style.width = (ne.x - sw.x) + 'px';
+                div.style.height = (sw.y - ne.y) + 'px';
+                div.style.opacity = 0.5;
+            };
+            // The onRemove() method will be called automatically from the API if
+            // we ever set the overlay's map property to 'null'.
+            USGSOverlay.prototype.onRemove = function() {
+                this.div_.parentNode.removeChild(this.div_);
+                this.div_ = null;
+            };
+            var radars = radars.val();
+            for (var yy in layers) {
+                var bounds = layers[yy].bounds;
+                var pathi = [];
+                for (var xx in bounds) {
+                    var ll = bounds[xx].split(',');
+                    var lati = parseFloat(ll[0]);
+                    var lngi = parseFloat(ll[1]);
+                    pathi.push({
+                        lat: lati,
+                        lng: lngi
+                    })
+                }
+                var layer = new google.maps.Polyline({
+                    path: pathi,
+                    geodesic: true,
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 1.0,
+                    strokeWeight: 3
+                });
+                layer.setMap(Fmap);
+                attachPolygonInfoWindow(layer, layers[yy].title);
+
+            }
+            if (window.overlays.length > 0) {
+                for (var qq in window.overlays) {
+                    window.overlays[qq].setMap(null);
+                }
+                window.overlays = [];
+            }
+            for (var zz in radars) {
+                var lb = radars[zz].lowerBound.split(',');
+                var ub = radars[zz].upperBound.split(',');
+                var bounds = new google.maps.LatLngBounds(
+                    new google.maps.LatLng(parseFloat(lb[0]), parseFloat(lb[1])),
+                    new google.maps.LatLng(parseFloat(ub[0]), parseFloat(ub[1])));
+                var overlay = new USGSOverlay(bounds, radars[zz].src + (Math.random()).toString(), Fmap);
+                window.overlays.push(overlay);
+            }
+
+
+
+
+            google.maps.visualRefresh = true;
+            var mapDiv = document.getElementById('googft-mapCanvas1');
+
+            function attachPolygonInfoWindow(polygon, label) {
+                var infoWindow = new google.maps.InfoWindow();
+                google.maps.event.addListener(polygon, 'click', function(e) {
+                    infoWindow.setContent(label + ' catchment');
+                    var latLng = e.latLng;
+                    infoWindow.setPosition(latLng);
+                    infoWindow.open(Fmap);
+                });
+            }
+
+
+
+            createMarkers(1);
+
+            //Add listener
+            google.maps.event.addListener(Fmap, "click", function(event) {
+                var latitude = event.latLng.lat();
+                var longitude = event.latLng.lng();
+                console.log('{lat:' + latitude + ', lng:' + longitude + '},');
+            }); //end addListener
+        });
+    });
+}
+
+
+/** @constructor */
+function USGSOverlay(bounds, image, map) {
+
+    // Initialize all properties.
+    this.bounds_ = bounds;
+    this.image_ = image;
+    this.map_ = map;
+
+    // Define a property to hold the image's div. We'll
+    // actually create this div upon receipt of the onAdd()
+    // method so we'll leave it null for now.
+    this.div_ = null;
+
+    // Explicitly call setMap on this overlay.
+    this.setMap(map);
+}
+
+
+
+
+function showHide() {
+    Fmap.controls[google.maps.ControlPosition.RIGHT_BOTTOM].j = []
+    var legend = document.getElementById('legend');
+    legend.parentNode.removeChild(legend);
+}
+
+function signIn() {
+    window.location.href = 'https://taylored-instruction.firebaseapp.com/login.html'
+}
+
+function signOut() {
+    firebase.auth().signOut().then(function() {
+        alert('Signed Out');
+        window.location.href = 'https://taylored-instruction.firebaseapp.com/'
+    }, function(error) {
+        console.error('Sign Out Error', error);
+    });
+}
+
+function openMTab(event, divName) {
+    var i, x, tablinks;
+    var x = document.getElementsByClassName("MTab");
+    for (i = 0; i < x.length; i++) {
+        x[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("Mtablink");
+    for (i = 0; i < x.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" w3-green", "");
+    }
+    document.getElementById(divName).style.display = "block";
+    event.currentTarget.className += " w3-green";
+}
+
+
+function clearfavs() {
+    localStorage.removeItem("favslist")
+    localStorage.favslist = ""
+    document.getElementById("favsdiv").innerHTML = "";
+    if (firebase.auth().currentUser!==null) {
+        firebase.database().ref('users/' + firebase.auth().currentUser.uid + '/info').update({
+            favourites: localStorage.favslist
+        })
+    }
+
+}
+
+function addtofavs() {
+    if (localStorage.favslist === undefined || localStorage.favslist === null) {
+        localStorage.favslist = ""
+    }
+    var favslist = localStorage.favslist
+    var n = document.getElementById("newfav")[document.getElementById("newfav").selectedIndex].text
+    var count = 0;
+    for (var j = 0; j < favslist.split(";").length - 1; j++) {
+        if (n.toString() == favslist.split(";")[j]) {
+            count += 1
+        }
+    }
+    if (count == 0) {
+        var json = JSON.parse(localStorage.json)
+        var favstring = n.toString() + ";"
+        localStorage.favslist = localStorage.favslist + favstring
+    }
+    if (firebase.auth().currentUser!==null) {
+        firebase.database().ref('users/' + firebase.auth().currentUser.uid + '/info').update({
+            favourites: localStorage.favslist
+        })
+    }
+	alert("New favourite added.");
+}
+
+function Comparator(a, b) {
+    if (new Date(a[0]) < new Date(b[0])) return -1;
+    if (new Date(a[0]) > new Date(b[0])) return 1;
+    return 0;
+}
+
+function favMod(element) {
+    var favslist = localStorage.favslist.split(";");
+    var newfavs = new Array()
+    for (var x in favslist) {
+        var div = document.createElement('div');
+        div.innerHTML = favslist[x];
+        if (div.textContent === element) {
+            document.getElementById('favsdiv').removeChild(document.getElementById(element));
+            favslist.splice(x, 1);
+            localStorage.favslist = favslist.join(";");
+
+            firebase.database().ref('users/' + firebase.auth().currentUser.uid + '/info').update({
+                favourites: localStorage.favslist
+            });
+        }
+    }
+}
+
+async function displayfavsContent(data, key) {
+  Promise.all([scriptPromise4, scriptPromise6]).then(dispy => {
+	var colour = ["yellow !important", "red !important", "green !important", "blue !important", "pink !important"][data.lRank];
+  if (data.lRank == '0') {
+      var blankdiv = false
+  } else {
+      var blankdiv = true
+  }
+  if (blankdiv) {
+      if (data.leveldata === null || data.leveldata === undefined) {
+          var divHeight = ""
+      } else {
+          var divHeight = "200px"
+      }
+  } else {
+      var divHeight = ""
+  }
+  var node = "<div class='w3-bar'><button onclick=\"favMod(this.parentElement.parentElement.id)\" class=\"w3-button w3-right\" style=\"line-height:0.5;color:red !important;font-size:36px !important\">&times;</button><div id = \"" + key + " content\"  style = \"border-left: 6px solid " + colour + ";\">River: " + data.river + " - " + data.sectionURL + "<br>Levels: " + data.minLevel + "-" + data.maxLevel + " Current: " + (Math.round(100 * parseFloat(data.cLevel)) / 100).toString() + " Previous: " + (Math.round(100 * parseFloat(data.pLevel)) / 100).toString() + "<br>Conditions: 3h rain: " + data['3h'] + 'mm, 24h rain: ' + data["24h"] + "mm. <br>Forecast: " + data.forecast + "</div></div><canvas id = \"" + key + "curve_chart\" style = \"max-width:100% !important; background-color: white; height:" + divHeight + "\"></canvas><br>";
+  document.getElementById(key).innerHTML = node
+  if (blankdiv) {
+	var rainData = data.raindata.split(',');
+	rainData.pop();
+    var chartData = {
+      labels: [],
+      datasets: [{ 
+          data: [],
+          label: "Level",
+		  type: 'line',
+          borderColor: "#000000",
+          fill: false
+        }, { 
+          data: [],
+		  type: 'line',
+          label: "Min. Level",
+          borderColor: "#FF0000",
+          fill: false
+        }, { 
+          data: [],
+		  type: 'line',
+          label: "Max. Level",
+          borderColor: "#0000ff",
+          fill: false
+        }, {
+		  type: 'bar',
+		  categoryPercentage: 1.0,
+		  barPercentage: 1.0,
+		  barThickness: 'flex',
+		  minBarLength: 20,
+          data: [],
+          label: "Rainfall",
+          borderColor: "#00FF00",
+          fill: true,
+		  yAxisID: 'A'
+        }
+		
+      ]
+    }
+	var absMax = data.maxLevel;
+	var absMin = data.minLevel;
+	if (absMax ==='-') {absMax=data.minLevel}
+	if (absMin ==='-') {absMin=data.maxLevel}
+	var x2 = [];
+    for (var i in data.leveldata) {
+		if (x2.length==0){x2.push(new Date(parseInt(i)))};
+		if (data.leveldata[i]>absMax){absMax=data.leveldata[i]}
+		if (data.leveldata[i]<absMin){absMin=data.leveldata[i]}
+        var dd = new Date(parseInt(i));
+		if (x2[x2.length-1].getDay()==dd.getDay()){}else{x2.push(dd)}
+        chartData.labels.push(dd);
+		chartData.datasets[0].data.push(data.leveldata[i]);
+        chartData.datasets[1].data.push(data.minLevel);
+        chartData.datasets[2].data.push(data.maxLevel);
+    }
+while (rainData.length<x2.length){
+  rainData.unshift(0)
+}
+var rainMax=0;
+if (x2.length<rainData.length) {}
+else{
+for (zz in rainData){
+  if (rainMax<rainData[zz]){rainMax=rainData[zz]}
+  chartData.datasets[3].data.push({x:x2[zz],y:rainData[zz]});
+  }
+}
+if(absMin>=0){absMin *= 0.6}else{absMin *= 1.4};
+if(absMax>=0) {absMax*=1.4}else{absMax *= 0.6};
+    new Chart(document.getElementById(key + "curve_chart"), {
+      type: 'bar',  
+      data: chartData,
+      options: {
+        elements: {
+		point: {
+			radius: 0,
+			hitRadius: 6
+            }
+        },
+	title: {
+          display: true,
+          text: key
+        },
+	animation: false,
+legend: {
+display: false
+      },
+scales: {
+    xAxes: [{
+      type: "time",
+      time: {
+        unit: 'day',
+        unitStepSize: 1,
+        tooltipFormat: "MMM D, h a",
+        displayFormats: {
+          hour: 'MMM D, h A'
+        }
+      }
+    }],
+	yAxes:[{
+	  type: 'linear',
+	  position: 'left'
+	  },
+	  {
+	  id:'A',
+	  position:'right',
+	  ticks: {
+		max: Math.max(40,rainMax)
+      },
+	  gridLines: {display:false}
+        }]
+      }
+    }
+  });
+}
+});
+}
+
+
+function displayfavs() {
+    if (localStorage.json) {
+        var json = JSON.parse(localStorage.json)
+        var favsdiv = document.getElementById("favsdiv")
+        var favslist = localStorage.favslist
+        if (favslist === undefined || favslist === null || favslist === "") {} else {
+            var favslist = localStorage.favslist.split(";")
+            var container = document.getElementById("favsdiv");
+            for (x in favslist) {
+                if (favslist[x] !== "") {
+                    var div = favslist[x]
+                    if (document.getElementById(div) === null) {
+                        var cont = document.createElement('div')
+                        cont.id = div
+                        favsdiv.appendChild(cont)
+                    }
+                    displayfavsContent(json[div], div);
+                }
+            }
+        }
+    }
+}
+
+function removeOptions(selectbox) {
+    var i;
+    for (i = selectbox.options.length - 1; i >= 0; i--) {
+        selectbox.remove(i);
+    }
+}
+
+function favpopulate() {
+    if (localStorage.json) {
+        var json = JSON.parse(localStorage.json)
+        var df = document.createDocumentFragment();
+        for (var i in json) {
+            var sec = json[i]
+            var option = document.createElement('option');
+            option.value = sec.river + ' - ' + sec.section;
+            option.innerText = option.value;
+            df.appendChild(option);
+        }
+        var selects = ['newlogrivsecs', 'RivSec', 'newfav']
+        for (var zz in selects) {
+            var elm = document.getElementById(selects[zz]);
+            removeOptions(elm);
+            elm.appendChild(df.cloneNode(true));
+        }
+    }
+}
+
+function openLTab(event, divName) {
+    var i, x, tablinks;
+    var x = document.getElementsByClassName("log");
+    for (i = 0; i < x.length; i++) {
+        x[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("ltablink");
+    for (i = 0; i < x.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" w3-green", "");
+    }
+    document.getElementById(divName).style.display = "block";
+    event.currentTarget.className += " w3-green";
+    document.getElementById("logbooklist").selectedIndex = "0";
+}
+
+function hideLog() {
+    if (document.getElementById("logbooklist").selectedIndex == "0") {
+        document.getElementById("logmod").className = "w3-hide"
+    } else {
+        document.getElementById("logmod").className = ""
+    }
+}
+
+function excelLog() {
+    firebase.database().ref('users/' + firebase.auth().currentUser.uid + '/completed').once('value').then(function(snapshot) {
+        var data = snapshot.val()
+        var headers = ['Organiser', 'Trip Name', 'Section', 'Date', 'Time', 'Email', 'Phone', 'Grade', 'Duration (hrs)', 'Distance (km)', 'Level', 'Participants', 'Role', 'Skills Practiced', 'Additional Info']
+        var arrData = []
+        var desired = ['uid', 'trip', 'section', 'date', 'time', 'email', 'phone', 'grade', 'duration', 'distance', 'level', 'participants', 'role', 'skills', 'info']
+        for (x in data) {
+            var obj = {}
+            var details = data[x].details
+            for (var y = 0; y < desired.length; y++) {
+                obj[headers[y]] = details[desired[y]];
+            }
+            arrData.push(obj)
+        }
+        arrData.sort(function(a, b) {
+            return (a.Date).localeCompare(b.Date);
+        });
+        var CSV = '';
+        var row = "";
+        //This loop will extract the label from 1st index of on array
+        for (var index in arrData[0]) {
+
+            //Now convert each value to string and comma-seprated
+            row += index + ',';
+        }
+
+        row = row.slice(0, -1);
+
+        //append Label row with line break
+        CSV += row + '\r\n';
+
+
+        //1st loop is to extract each row
+        for (var i = 0; i < arrData.length; i++) {
+            var row = "";
+
+            //2nd loop will extract each column and convert it in string comma-seprated
+            for (var index in arrData[i]) {
+                row += '"' + arrData[i][index] + '"\t,';
+            }
+
+            row.slice(0, row.length - 1);
+
+            //add a line break after each row
+            CSV += row + '\r\n';
+        }
+
+        if (CSV == '') {
+            alert("Invalid data");
+            return;
+        }
+
+        var uri = 'data:text/csv;charset=utf-8,' + escape(CSV);
+        var a = document.createElement("a");
+        document.body.appendChild(a);
+        a.href = uri;
+        a.download = firebase.auth().currentUser.displayName + " log.csv";
+        a.click();
+    });
+}
+
+function resizeInput() {
+    var ins = document.getElementsByTagName("input")
+    for (var x = 0; x < ins.length; x++) {
+        if (ins[x].type == "text" && ins[x].value.length > 0) {
+            ins[x].size = ins[x].value.length;
+        }
+    }
+}
+
+function logListContent(snapshot) {
+    removeOptions(document.getElementById("logbooklist"));
+    var elm = document.getElementById("logbooklist");
+    var df = document.createDocumentFragment();
+    var option = document.createElement('option');
+    option.value = -1;
+    option.appendChild(document.createTextNode("Choose a completed trip"));
+    df.appendChild(option);
+    for (var zz in snapshot){
+        var data = snapshot[zz];
+        var option = document.createElement('option');
+        option.value = zz;
+        option.appendChild(document.createTextNode(data.details.trip + " - " + data.details.date));
+        df.appendChild(option);
+    };
+    elm.appendChild(df);
+}
+
+function logList() {
+    logListContent(JSON.parse(localStorage.logList));
+}
+
+function getTrip() {
+    var trip = document.getElementById("logbooklist").value;
+    if (trip === "-1") {} else {
+        dispLog(trip);
+    }
+}
+
+function dispLog(trip) {
+    var logRoot = JSON.parse(localStorage.logList)
+    var data = logRoot[trip];
+    if (data.details.section.split("<")[1] === undefined) {
+        var sec = data.details.section
+    } else {
+        var sec = data.details.section.split("<")[0] + data.details.section.split("<")[1].split(">")[1]
+    }
+    document.getElementById("logUid").value = data.details.uid
+    document.getElementById("logTripname").value = data.details.trip
+    document.getElementById("logSec").value = sec
+    document.getElementById("logDate").value = data.details.date
+    document.getElementById("logTime").value = data.details.time
+    document.getElementById("logEmail").value = data.details.email
+    document.getElementById("logPhone").value = data.details.phone
+    document.getElementById("logInfo").value = data.details.info
+    document.getElementById("logLevel").value = data.details.level
+    document.getElementById("logGrade").value = data.details.grade
+    document.getElementById("logDuration").value = data.details.duration
+    document.getElementById("logDistance").value = data.details.distance
+    document.getElementById("logRole").value = data.details.role
+    document.getElementById("logSkills").value = data.details.skills
+    document.getElementById("logParticipants").value = data.details.participants
+    resizeInput()
+}
+
+function newLog() {
+    if (localStorage.json) {
+        var json = JSON.parse(localStorage.json)
+        var i = document.getElementById('newlogrivsecs').value
+        if (document.getElementById("newlogrivsecsalt").checked === true) {
+            var section = document.getElementById("newlogrivsecsalttext").value
+        } else {
+            var section = json[i].river + " - " + json[i].section
+        }
+        var logRef = firebase.database().ref().child('users/' + firebase.auth().currentUser.uid + '/completed').push().key;
+        var payload = {
+            uid: document.getElementById("newlogUid").value,
+            trip: document.getElementById("newlogTripname").value,
+            section: section,
+            date: document.getElementById("newlogDate").value,
+            time: document.getElementById("newlogTime").value,
+            email: document.getElementById("newlogEmail").value,
+            phone: document.getElementById("newlogPhone").value,
+            info: document.getElementById("newlogInfo").value,
+            participants: document.getElementById("newlogParticipants").value,
+            level: document.getElementById("newlogLevel").value,
+            skills: document.getElementById("newlogSkills").value,
+            role: document.getElementById("newlogRole").value,
+            grade: document.getElementById("newlogGrade").value,
+            duration: document.getElementById("newlogDuration").value,
+            distance: document.getElementById("newlogDistance").value
+        }
+        document.getElementById("flognew").reset();
+
+        firebase.database().ref('users/' + firebase.auth().currentUser.uid + '/completed/' + logRef + '/details').update(payload);
+
+        alert("Logbook updated")
+        logList()
+    }
+}
+
+function loghider() {
+    if (document.getElementById("newlogrivsecsalt").checked === true) {
+        document.getElementById("newlogrivsecsalttextdiv").className = ""
+        document.getElementById("newlogrivsecsdiv").className = "w3-hide"
+    } else {
+        document.getElementById("newlogrivsecsalttextdiv").className = "w3-hide"
+        document.getElementById("newlogrivsecsdiv").className = ""
+    }
+}
+
+function fillLog() {
+    document.getElementById('newlogGrade').value = "";
+    document.getElementById('newlogDistance').value = "";
+    document.getElementById('newlogDuration').value = "";
+    var json = JSON.parse(localStorage.json);
+    var ref = document.getElementById('newlogrivsecs').value;
+    document.getElementById('newlogGrade').value = json[ref].avgGrade;
+    document.getElementById('newlogDistance').value = json[ref].length;
+    document.getElementById('newlogDuration').value = json[ref].duration;
+}
+
+
+function updateLog() {
+    if (document.getElementById("logbooklist").value == -1) {
+        alert("You must select a trip that you have created or joined. For historic trips you can add a new trip then wait approx. one hour for it to appear here.")
+    } else {
+        firebase.database().ref('users/' + firebase.auth().currentUser.uid + '/completed/' + document.getElementById("logbooklist").value + '/details').update({
+            uid: document.getElementById("logUid").value,
+            trip: document.getElementById("logTripname").value,
+            section: document.getElementById("logSec").value,
+            date: document.getElementById("logDate").value,
+            time: document.getElementById("logTime").value,
+            email: document.getElementById("logEmail").value,
+            phone: document.getElementById("logPhone").value,
+            info: document.getElementById("logInfo").value,
+            participants: document.getElementById("logParticipants").value,
+            level: document.getElementById("logLevel").value,
+            skills: document.getElementById("logSkills").value,
+            role: document.getElementById("logRole").value,
+            grade: document.getElementById("logGrade").value,
+            duration: document.getElementById("logDuration").value,
+            distance: document.getElementById("logDistance").value
+        });
+        alert("Logbook updated")
+        document.getElementById("logbooklist").selectedIndex = "0";
+        hideLog()
+        logList()
+    }
+}
+
+function update() {
+    var i = document.getElementById("RivSec").value
+    var json = JSON.parse(localStorage.json)
+    var sec = json[i]
+    document.getElementById("River").innerHTML =
+        "River: " + sec.river
+    document.getElementById("Section").innerHTML =
+        "Section: " + sec.section
+    document.getElementById("Character").innerHTML =
+        "Character: " + sec.character
+    document.getElementById("Min. Level").innerHTML =
+        "Min. Level: " + sec.minLevel
+    document.getElementById("Max. Level").innerHTML =
+        "Max. Level: " + sec.maxLevel
+    document.getElementById("Current Level").innerHTML =
+        "Current Level: " + sec.cLevel
+    document.getElementById("12 hr Previous").innerHTML =
+        "12 hr Previous: " + sec.pLevel
+    document.getElementById("Average Grade").innerHTML =
+        "Average Grade: " + sec.avgGrade
+    document.getElementById("Length (km)").innerHTML =
+        "Length (km): " + sec.distance
+    document.getElementById("Time (hrs)").innerHTML =
+        "Time (hrs): " + sec.duration
+    document.getElementById("Shuttle (min)").innerHTML =
+        "Shuttle (min): " + sec.shuttle
+    document.getElementById("Weather").innerHTML =
+        "Weather: 3h rain: " + sec["3h"] + 'mm, 24h rain: ' + sec["24h"] + "mm."
+    document.getElementById("Forecast").innerHTML =
+        "Forecast: " + sec.forecast
+    document.getElementById("Full Description").innerHTML =
+        "Full Description: " + sec.description
+}
+
+
+
+
+function createInfo(section) {
+    var contents = '<div class="googft-info-window" style = "max-width:180px">' +
+        '<b>River:</b> ' + section.river + '<br>' +
+        '<b>Section:</b> ' + section.sectionURL + '<br>' +
+        '<b>Character:</b> ' + section.character + '<br>' +
+        '<b>Min. Level:</b> ' + section.minLevel + '<br>' +
+        '<b>Max. Level:</b> ' + section.maxLevel + '<br>' +
+        '<b>Current Level:</b> ' + section.cLevel + '<br>' +
+        '<b>12 hr Previous:</b> ' + section.pLevel + '<br>' +
+        '<b>Average Grade:</b> ' + section.avgGrade + '<br>' +
+        '<b>Length (km):</b> ' + section.length + '<br>' +
+        '<b>Time (hrs):</b> ' + section.duration + '<br>' +
+        '<b>Shuttle (min):</b> ' + section.shuttle + '<br>' +
+        '<b>Weather:</b> 3h Rain: ' + section["3h"] + 'mm, 24h Rain: ' + section["24h"] + 'mm<br>' +
+        '<b>Forecast:</b> ' + section.forecast +
+        '</div>';
+    return contents
+}
+
+function setMapOnAll(map) {
+    for (var i = 0; i < markers.length; i++) {
+        markers[i].setMap(map);
+    }
+}
+
+function clearMarkers() {
+    setMapOnAll(null);
+}
+
+// Shows any markers currently in the array.
+function showMarkers() {
+    setMapOnAll(Fmap);
+}
+
+// Deletes all markers in the array by removing references to them.
+function deleteMarkers() {
+    clearMarkers();
+    markers = [];
+}
+
+function createMarkers(type) {
+    deleteMarkers();
+    var markerIcons = ['https://taylored-instruction.firebaseapp.com/images/yellow_icon.png', 'https://taylored-instruction.firebaseapp.com/images/red_icon.png', 'https://taylored-instruction.firebaseapp.com/images/green_icon.png', 'https://taylored-instruction.firebaseapp.com/images/blue_icon.png', 'https://taylored-instruction.firebaseapp.com/images/pink_icon.png'];
+    var wmarkerIcons = ['https://taylored-instruction.firebaseapp.com/images/red_icon.png', 'https://taylored-instruction.firebaseapp.com/images/yellow_icon.png', 'https://taylored-instruction.firebaseapp.com/images/green_icon.png', 'https://taylored-instruction.firebaseapp.com/images/blue_icon.png', 'https://taylored-instruction.firebaseapp.com/images/pink_icon.png'];
+    var sections = JSON.parse(localStorage.json);
+    var infowindow = new google.maps.InfoWindow();
     var mini = document.getElementById("min. level");
     var miniVal = mini.options[mini.selectedIndex].value;
     var maxi = document.getElementById("max. level");
@@ -86,61 +999,119 @@ html, body, #googft-mapCanvas {
     var miniValg = minig.options[minig.selectedIndex].value;
     var maxig = document.getElementById("max. grade");
     var maxiValg = maxig.options[maxig.selectedIndex].value;
-    var mults = document.getElementById("type");
-    var mult = mults.options[mults.selectedIndex].value;
-    var sid = mult*2
-    var tid = mult*3
-    var layer = new google.maps.FusionTablesLayer({
-      map: map,
-      heatmap: { enabled: false },
-      query: {
-        select: "col11",
-        from: "1xOnTf3qaHEzBGDv0iSEihtLUMK7nIn9QV2ED17ke",
-        where:  "col15 \x3e\x3d "+miniVal+" and col15 \x3c\x3d "+maxiVal+" and col14 \x3e\x3d "+miniValg+" and col16 \x3c\x3d "+maxiValg
-      },
-      options: {
-        styleId: sid,
-        templateId: tid
-      }
-    });
-        // Create the legend and display on the map
-        if(mult==1){
+    var rivNamer = document.getElementById("mapRiver");
+    var rivName = rivNamer.options[rivNamer.selectedIndex].value;
+for (var ii in sections) {
+        var level = parseFloat(sections[ii].lRank);
+        var maxGrade = parseInt(sections[ii].maxGrade);
+        var minGrade = parseInt(sections[ii].minGrade);
+        if (level >= miniVal && level <= maxiVal && minGrade >= miniValg && maxGrade <= maxiValg && (rivName == 'Any' || rivName == sections[ii].river)) {
+            if (type == 1) {
+                var iconColour = markerIcons[sections[ii].lRank];
+            } else if (type == 2) {
+                var iconColour = wmarkerIcons[sections[ii].fRank];
+            }
+	    else if (type == 4) {
+		var iconColour = wmarkerIcons[sections[ii].rRank];
+	    }
+            var secLoc = sections[ii].latLng.split(',');
+            var marker = new google.maps.Marker({
+                position: {
+                    lat: parseFloat(secLoc[0]),
+                    lng: parseFloat(secLoc[1])
+                },
+                map: Fmap,
+                title: sections[ii].river + ' - ' + sections[ii].section,
+                icon: iconColour
+            });
+            google.maps.event.addListener(marker, 'click', (function(marker, sections, ii) {
+                return function() {
+                    infowindow.close();
+                    infowindow.setContent(createInfo(sections[ii]));
+                    infowindow.open(Fmap, marker);
+                }
+            })(marker, sections, ii));
+            markers.push(marker);
+        }
+    }
+    var legend = document.getElementById('legend');
+    if (legend !== null) {
+        legend.parentNode.removeChild(legend);
+    }
+    // Create the legend and display on the map
+    if (type == 1) {
         var redtext = "Low Level"
         var yeltext = "Visual"
         var gretext = "Good Level"
         var blutext = "High Level"
-        }
-        else{
+    } else {
         var redtext = "24h < 10mm OR <br><div class='box white'></div> 5-day < 30mm"
         var yeltext = "24h < 20mm OR <br><div class='box white'></div> 5-day < 50mm"
         var gretext = "24h < 40mm OR <br><div class='box white'></div> 5-day < 80mm"
         var blutext = "24h > 40mm OR <br><div class='box white'></div> 5-day > 80mm"
+    }
+    legend = document.createElement('div');
+    legend.id = 'legend';
+    var content = [];
+    content.push('<p><input type="checkbox" name="hide" value = 1 onclick = "showHide()"> Hide </p>')
+    content.push('<h3>Legend</h3>');
+    content.push('<p><div class="color red"></div>' + redtext + '</p>');
+    content.push('<p><div class="color yellow"></div>' + yeltext + '</p>');
+    content.push('<p><div class="color green"></div>' + gretext + '</p>');
+    content.push('<p><div class="color blue"></div>' + blutext + '</p>');
+    content.push('<p><input type="checkbox" name="hide" value = 1 onclick = "showHide()"> Hide </p>')
+    legend.innerHTML = content.join('');
+    legend.index = 1;
+    Fmap.controls[google.maps.ControlPosition.RIGHT_BOTTOM].j = [legend];
+}
+
+
+async function initFMap() {
+   let holdUp = await scriptPromise1;
+	 google.maps.visualRefresh = true;
+    var mapDiv = document.getElementById('googft-mapCanvas1');
+    window.Fmap = new google.maps.Map(mapDiv, {
+        center: new google.maps.LatLng(-30.558562, 151.057332),
+        zoom: 5,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    });
+}
+
+
+
+function newMarkers() {
+    createMarkers(document.getElementById("type").value);
+}
+
+function mapRiverPopulate() {
+    var json = JSON.parse(localStorage.json)
+    removeOptions(document.getElementById("mapRiver"));
+    var elm = document.getElementById('mapRiver'),
+        df = document.createDocumentFragment();
+    var div = document.createElement('div');
+    div.innerHTML = "Any";
+    var option = document.createElement('option');
+    option.value = "Any";
+    option.appendChild(document.createTextNode(div.textContent));
+    df.appendChild(option);
+    elm.appendChild(df);
+    var last = ''
+    for (var i in json) {
+        var sec = json[i]
+        if (sec.river !== last) {
+            var div = document.createElement('div');
+            div.innerHTML = sec.river;
+            var option = document.createElement('option');
+            option.value = sec.river;
+            option.appendChild(document.createTextNode(div.textContent));
+            df.appendChild(option);
+            last = sec.river;
         }
-        var legend = document.createElement('div');
-        legend.id = 'legend';
-        var content = [];
- 		content.push('<p><input type="checkbox" name="hide" value = 1 onclick = "showHide()"> Hide </p>')
-        content.push('<h3>Legend</h3>');
-        content.push('<p><div class="color red"></div>'+redtext+'</p>');
-        content.push('<p><div class="color yellow"></div>'+yeltext+'</p>');
-        content.push('<p><div class="color green"></div>'+gretext+'</p>');
-        content.push('<p><div class="color blue"></div>'+blutext+'</p>');
-        legend.innerHTML = content.join('');
-        legend.index = 1;
-        map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legend);
-  }
-  
-      function showHide() {
-    var el = document.getElementById('legend');
-	el.value+=1
-	if (el.value % 2 ===0){
-        el.style.display = 'block';
-	}
-	else{
-		el.style.display = 'none';
-	}
-}  
-  google.maps.event.addDomListener(window, 'load', initialize);
+    }
+    elm.appendChild(df);
+}
+
+
 </script>
 </head>
 
