@@ -65,7 +65,49 @@ html, body, #googft-mapCanvas {
   }
 </style>
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAvBPL76AXVKbwSpm9X1BlXTzaTXhNLYew"></script>
-<script>
+
+</head>
+
+<body>
+  <div> <p style="text-align:center;color:white">Map&nbsp;Type:&nbsp;<select id="type" onchange="initialize()">
+  <option value=1 selected>River Levels</option>
+  <option value=2>Forecast Rainfall</option>
+</select>
+Min.&nbsp;Level:&nbsp;<select id="min. level" onchange="initialize()">
+  <option value=-1 selected>Any</option>
+  <option value=0>Visual</option>
+  <option value=1>Low Level</option>
+  <option value=2>Good Level</option>
+  <option value=3>High Level</option>
+</select>
+ Max.&nbsp;Level:&nbsp;<select id="max. level" onchange="initialize()" default>
+  <option value=0>Visual</option>
+  <option value=1>Low Level</option>
+  <option value=2>Good Level</option>
+  <option value=3>High Level</option>
+  <option value=4 selected>Any</option>
+</select>
+Min.&nbsp;Grade:&nbsp;<select id="min. grade" onchange="initialize()" default>
+  <option value=-1>None</option>
+  <option value=2 selected>2</option>
+  <option value=3>3</option>
+  <option value=4>4</option>
+  <option value=5>5</option>
+  <option value=6>6</option>
+</select>
+Max.&nbsp;Grade:&nbsp;<select id="max. grade" onchange="initialize()" default>
+  <option value=7>None</option>
+  <option value=2>2</option>
+  <option value=3>3</option>
+  <option value=4>4</option>
+  <option value=5>5</option>
+  <option value=6 selected>6</option>
+    </select></p>
+</div>
+  
+  <div id="googft-mapCanvas"></div>
+</body>
+	<script>
 	const scriptPromise1 = new Promise((resolve, reject) => {
   const script = document.createElement('script');
   document.body.appendChild(script);
@@ -1113,45 +1155,4 @@ function mapRiverPopulate() {
 
 
 </script>
-</head>
-
-<body>
-  <div> <p style="text-align:center;color:white">Map&nbsp;Type:&nbsp;<select id="type" onchange="initialize()">
-  <option value=1 selected>River Levels</option>
-  <option value=2>Forecast Rainfall</option>
-</select>
-Min.&nbsp;Level:&nbsp;<select id="min. level" onchange="initialize()">
-  <option value=-1 selected>Any</option>
-  <option value=0>Visual</option>
-  <option value=1>Low Level</option>
-  <option value=2>Good Level</option>
-  <option value=3>High Level</option>
-</select>
- Max.&nbsp;Level:&nbsp;<select id="max. level" onchange="initialize()" default>
-  <option value=0>Visual</option>
-  <option value=1>Low Level</option>
-  <option value=2>Good Level</option>
-  <option value=3>High Level</option>
-  <option value=4 selected>Any</option>
-</select>
-Min.&nbsp;Grade:&nbsp;<select id="min. grade" onchange="initialize()" default>
-  <option value=-1>None</option>
-  <option value=2 selected>2</option>
-  <option value=3>3</option>
-  <option value=4>4</option>
-  <option value=5>5</option>
-  <option value=6>6</option>
-</select>
-Max.&nbsp;Grade:&nbsp;<select id="max. grade" onchange="initialize()" default>
-  <option value=7>None</option>
-  <option value=2>2</option>
-  <option value=3>3</option>
-  <option value=4>4</option>
-  <option value=5>5</option>
-  <option value=6 selected>6</option>
-    </select></p>
-</div>
-  
-  <div id="googft-mapCanvas"></div>
-</body>
 </html>
